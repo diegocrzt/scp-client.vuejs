@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Chat kachiai en Vue</title>
+  <script src="https://unpkg.com/vue"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div id="login" v-if="logged === false">
+      <table>
+        <tr>
+          Nombre:
+        </tr>
+        <tr>
+          <input type="text" v-model="username"></input>
+        </tr>
+        <tr>
+          <input type="button" value="Conectarse" onclick="app.connect()"></input>
+        </tr>
+      </table>
+    </div>
+    <div id="chat" v-if="logged">
+      <input type="text" v-model="content"></input>
+      <input type="button" v-on:click="sendMessage" value="Enviar"></input>
+      <div id="history">
+        <!-- <textarea type="text" rows="5" disabled="true" v-model="conversation"></textarea> -->
+        <div v-for="m in messages">
+          [{{ m.localDateTime }}] {{ m.username }} : {{ m.content }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        username: '',
+        logged: false,
+        content: '',
+        conversation: '',
+        messages:[],
+      },
+      mounted() {
+        if (localStorage.username) {
+          this.username = localStorage.username;
+          this.logged = true;
+        } else {
+          this.logged = false;
+        }
+      },
+      watch: {},
+      methods: {
+        humanizeURL: function (url) {
+          return url
+            .replace(/^https?:\/\//, '')
+            .replace(/\/$/, '')
+        },
+        connect: function () {
+          localStorage.username = this.username;
+          this.logged = true;
+        },
+        sendMessage: function () {
+          const promesa = fetch("http://localhost:8080/messages", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: this.username, content: this.content })
+          });
+
+          promesa.then(r => {
+            const allPromesa = fetch("http://localhost:8080/messages");
+            allPromesa.then(response => {
+              response.json().then( data => {
+                this.messages = data;
+                //this.conversation = data;
+              });
+              
+            });
+          })
+
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>
