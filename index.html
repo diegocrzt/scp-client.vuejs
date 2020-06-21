@@ -67,23 +67,19 @@
             this.getMessages();
           },1000);
         },
-        getMessages() {
-          const allPromesa = fetch("http://localhost:8080/messages");
-          allPromesa.then(response => {
-            response.json().then(data => {
-              this.messages = data;
-            });
-          });
+        async getMessages() {
+          const response = await fetch("http://localhost:8080/messages");
+          const data = await response.json();
+          this.messages = data;
         },
-        sendMessage: function () {
-          const promesa = fetch("http://localhost:8080/messages", {
+        async sendMessage () {
+          const r = await fetch("http://localhost:8080/messages", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({ username: this.username, content: this.content })
           });
-
         }
       }
     })
