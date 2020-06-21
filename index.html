@@ -27,7 +27,7 @@
       <div id="history">
         <!-- <textarea type="text" rows="5" disabled="true" v-model="conversation"></textarea> -->
         <div v-for="m in messages">
-          [{{ m.localDateTime }}] {{ m.username }} : {{ m.content }}
+          [{{ m.localDateTime }}] <b>{{ m.username }}</b> : <i>{{ m.content }}</i>
         </div>
       </div>
     </div>
@@ -41,17 +41,19 @@
         logged: false,
         content: '',
         conversation: '',
-        messages:[],
+        messages: [],
       },
       mounted() {
         if (localStorage.username) {
           this.username = localStorage.username;
           this.logged = true;
+          setInterval(()=>{
+            this.getMessages();
+          },1000);
         } else {
           this.logged = false;
         }
       },
-      watch: {},
       methods: {
         humanizeURL: function (url) {
           return url
@@ -61,6 +63,17 @@
         connect: function () {
           localStorage.username = this.username;
           this.logged = true;
+          setInterval(()=>{
+            this.getMessages();
+          },1000);
+        },
+        getMessages() {
+          const allPromesa = fetch("http://localhost:8080/messages");
+          allPromesa.then(response => {
+            response.json().then(data => {
+              this.messages = data;
+            });
+          });
         },
         sendMessage: function () {
           const promesa = fetch("http://localhost:8080/messages", {
@@ -70,17 +83,6 @@
             },
             body: JSON.stringify({ username: this.username, content: this.content })
           });
-
-          promesa.then(r => {
-            const allPromesa = fetch("http://localhost:8080/messages");
-            allPromesa.then(response => {
-              response.json().then( data => {
-                this.messages = data;
-                //this.conversation = data;
-              });
-              
-            });
-          })
 
         }
       }
